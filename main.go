@@ -10,13 +10,13 @@ import (
 )
 
 const (
- url          = "http://srv.msk01.gigacorp.local/_stats"
- maxAttempts  = 3
- sleepTime    = time.Second
- memoryLimit  = 80
- diskLimit    = 90
+ url           = "http://srv.msk01.gigacorp.local/_stats"
+ maxAttempts   = 3
+ sleepTime     = time.Second
+ memoryLimit   = 80
+ diskLimit     = 90
  bandwidthLimit = 90
- loadLimit    = 30
+ loadLimit     = 30
 )
 
 var failedAttempts int
@@ -30,7 +30,6 @@ func main() {
  }
 }
 
-// Fetch and process server statistics
 func fetchAndProcessStats() bool {
  response, err := http.Get(url)
  if err != nil || response.StatusCode != http.StatusOK {
@@ -47,7 +46,6 @@ func fetchAndProcessStats() bool {
  return true
 }
 
-// Parse the response body into an integer array
 func parseResponseBody(body io.Reader) ([7]int, error) {
  var data [7]int
 
@@ -71,7 +69,6 @@ func parseResponseBody(body io.Reader) ([7]int, error) {
  return data, nil
 }
 
-// Analyze the parsed data and print warnings if thresholds are exceeded
 func analyzeData(data [7]int) {
  // Check Load Average
  if data[0] > loadLimit {
@@ -97,11 +94,10 @@ func analyzeData(data [7]int) {
  }
 }
 
-// Handle a failed attempt and print a message if necessary
 func handleFailedAttempt() {
  failedAttempts++
  if failedAttempts >= maxAttempts {
   fmt.Println("Unable to fetch server statistic")
-  failedAttempts = 0 // Reset the counter
+  failedAttempts = 0
  }
 }
