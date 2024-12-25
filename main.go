@@ -9,7 +9,6 @@ import (
  "time"
 )
 
-// Global variable to keep track of failed attempts
 var failedAttempts = 0
 
 func main() {
@@ -19,7 +18,6 @@ func main() {
  }
 }
 
-// Fetch server statistics from the given URL
 func fetchServerStatistics() (*http.Response, error) {
  response, err := http.Get("http://srv.msk01.gigacorp.local/_stats")
  if err != nil {
@@ -28,7 +26,6 @@ func fetchServerStatistics() (*http.Response, error) {
  return response, nil
 }
 
-// Handle server response
 func handleResponse(response *http.Response, err error) {
  if err != nil || response.StatusCode != 200 {
   handleFailedAttempt()
@@ -45,7 +42,6 @@ func handleResponse(response *http.Response, err error) {
  analyzeData(data)
 }
 
-// Attempt to parse response body into an integer array
 func parseResponseBody(body io.Reader) ([7]int, error) {
  var data [7]int
 
@@ -60,7 +56,7 @@ func parseResponseBody(body io.Reader) ([7]int, error) {
  }
 
  for index, element := range rawDataArray {
-  i, err := strconv.Atoi(element)
+  i, err := strconv.Atoi(strings.TrimSpace(element)) // Добавил TrimSpace для надежности
   if err != nil {
    return data, err
   }
@@ -69,7 +65,6 @@ func parseResponseBody(body io.Reader) ([7]int, error) {
  return data, nil
 }
 
-// Analyze and report based on parsed data
 func analyzeData(data [7]int) {
  // Check Load Average
  if data[0] > 30 {
@@ -83,23 +78,22 @@ func analyzeData(data [7]int) {
  }
 
  // Check free disk space
- if data[4] * 100 / data[3] > 90 {
+ if (data[3]-data[4])*100/data[3] > 10 {
   freeDiskSpace := (data[3] - data[4]) / (1024 * 1024)
   fmt.Printf("Free disk space is too low: %d Mb left\n", freeDiskSpace)
  }
 
  // Check network bandwidth
-	if data[6] * 100 / data[5] > 90 {
-  	freeBandwidth := (data[5] - data[6]) / 1000000
-  	fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidth)
-	}
+ if (data[5]-data[6])*100/data[5] > 10 {
+  freeBandwidth := (data[5] - data[6]) / 1000000
+  fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", freeBandwidth)
+ }
 }
 
-// Handle failed attempts by tracking and resetting counters
 func handleFailedAttempt() {
-	failedAttempts++
-	if failedAttempts >= 3 {
+ failedAttempts++
+ if failedAttempts >= 3 {
   failedAttempts = 0
   fmt.Println("Unable to fetch server statistic")
-	}
+ }
 }
