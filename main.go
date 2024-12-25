@@ -97,6 +97,8 @@ func fetchStatistics() {
 
 	analyzeData(data)
 
+	fetchStatistics()
+
 	defer response.Body.Close()
 }
 
