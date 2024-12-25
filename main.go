@@ -26,18 +26,18 @@ func main() {
 }
 
 func parseResponseBody(body io.Reader) ([7]int, error) {
-	var data [7]int{}
+	var data [7]int
 
 	rawBody, err := io.ReadAll(body)
 
 	if err != nil {
-		return fetchWithMaxRetry()
+		return data, err
 	}
 
-	rawDataArray := strings.Split(string(body), ",")
-	
+	rawDataArray := strings.Split(string(rawBody), ",")
+
 	if len(rawDataArray) != 7 {
-		return fetchWithMaxRetry()
+		return data, err
 	}
 
 	var isValidData = true
@@ -46,14 +46,14 @@ func parseResponseBody(body io.Reader) ([7]int, error) {
 
 		if err != nil {
 			isValidData = false
-			break;
+			break
 		}
 
 		data[index] = i
 	}
 
 	if !isValidData {
-		return fetchWithMaxRetry()
+		return data, err
 	}
 
 	return data, nil
@@ -84,13 +84,15 @@ func fetchStatistics() {
 	response, err := http.Get(url)
 
 	if err != nil || response.StatusCode != http.StatusOK {
-		return fetchWithMaxRetry()
+		fetchWithMaxRetry()
+		return 
 	}
 
 	data, err := parseResponseBody(response.Body)
 
 	if err != nil {
-		return fetchWithMaxRetry()
+		fetchWithMaxRetry()
+		return
 	}
 
 	analyzeData(data)
